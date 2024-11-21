@@ -1,0 +1,40 @@
+from machine import Pin, I2C
+from time import sleep
+from i2c_lcd import I2cLcd
+
+# Dirección I2C de la pantalla LCD (puede variar, comúnmente es 0x27 o 0x3F)
+I2C_ADDR = 0x27  
+ROWS = 2  # Número de filas del LCD (ajusta según tu modelo)
+COLS = 16  # Número de columnas del LCD (ajusta según tu modelo)
+
+# Configuración del bus I2C
+i2c = I2C(0, scl=Pin(22), sda=Pin(21), freq=400000)
+
+# Inicialización de la pantalla LCD
+lcd = I2cLcd(i2c, I2C_ADDR, ROWS, COLS)
+
+# Lista de nombres
+nombres = ["Ana", "Carlos"]
+
+def scroll_text(text, row, delay=0.3):
+    """
+    Función para hacer scroll de texto en una fila específica del LCD.
+    :param text: Texto a mostrar
+    :param row: Fila donde se mostrará (0 o 1 para pantallas 16x2)
+    :param delay: Tiempo entre desplazamientos
+    """
+    text = text + " " * COLS  # Añade espacios al final para un efecto suave
+    for i in range(len(text) - COLS + 1):
+        lcd.move_to(0, row)
+        lcd.putstr(text[i:i+COLS])
+        sleep(delay)
+
+try:
+    while True:
+        lcd.clear()  # Limpia la pantalla antes de mostrar
+        for nombre in nombres:
+            scroll_text(f"Hola, {nombre}!", row=0)
+            sleep(1)  # Pausa entre nombres
+except KeyboardInterrupt:
+    print("Programa detenido.")
+    lcd.clear()
